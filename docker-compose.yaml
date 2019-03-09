@@ -1,0 +1,35 @@
+version: '2'
+services:
+  proxy:
+    build:
+      context: ./envoy
+    volumes:
+      - ./envoy/service-envoy.yaml:/etc/service-envoy.yaml
+    networks:
+      - envoymesh
+    expose:
+      - "80"
+      - "8001"
+    ports:
+      - "80:80"
+      - "8001:8001"
+  authz:
+    build:
+      context: ./authz
+    networks:
+      envoymesh:
+        aliases:
+          - authz
+    ports:
+      - "9091:9091"
+  service:
+    build:
+      context: ./app
+    networks:
+      envoymesh:
+        aliases:
+          - service
+    ports:
+      - "8080:8080"
+networks:
+  envoymesh: {}

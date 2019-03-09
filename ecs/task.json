@@ -1,0 +1,25 @@
+{
+  "containerDefinitions": [
+    {
+      "image": "732217447476.dkr.ecr.us-east-1.amazonaws.com/ecs-envoy-demo",
+      "name": "envoy-service"
+    },
+    {
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "protocol": "tcp",
+          "containerPort": 80
+        },
+        {
+          "hostPort": 8081,
+          "protocol": "tcp",
+          "containerPort": 8081
+        }
+      ],
+      "image": "732217447476.dkr.ecr.us-east-1.amazonaws.com/service-envoy",
+      "name": "service-envoy"
+    }
+  ],
+  "networkMode": "awsvpc"
+}
