@@ -36,12 +36,25 @@ static_resources:
           - name: envoy.router
             config: {}
   clusters:
+  - name: eds
+    type: strict_dns
+    connect_timeout: 0.25s
+    lb_policy: round_robin
+    load_assignment:
+      cluster_name: eds
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+          address:
+            socket_address:
+              address: eds
+              port_value: 10000
   - name: ext-authz
     connect_timeout: 0.25s
     type: strict_dns
     lb_policy: round_robin
     load_assignment:
-      cluster_name: service
+      cluster_name: ext-authz
       endpoints:
       - lb_endpoints:
         - endpoint:

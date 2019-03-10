@@ -31,5 +31,14 @@ services:
           - service
     ports:
       - "8080:8080"
+  
+  redis:
+    image: redis:5-alpine
+    networks:
+      envoymesh:
+        aliases:
+          - redis
+    ports:
+      - 5432:5432
 networks:
   envoymesh: {}
