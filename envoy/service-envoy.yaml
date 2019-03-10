@@ -16,6 +16,10 @@ static_resources:
             name: local_route
             virtual_hosts:
             - name: service
+              rate_limits:
+              - stage: 0
+                actions:
+                  - remote_address: {}
               domains:
               - "*"
               routes:
@@ -24,6 +28,14 @@ static_resources:
                 route:
                   cluster: local_service
           http_filters:
+          - name: envoy.rate_limit
+            config:
+              domain: edge_proxy_per_ip
+              rate_limit_service:
+                grpc_service:
+                  envoy_grpc:
+                    cluster_name: ratelimit_cluster
+                  timeout: 0.2s
           - name: envoy.ext_authz
             typed_config:
               "@type": type.googleapis.com/envoy.config.filter.http.ext_authz.v2.ExtAuthz
@@ -35,13 +47,30 @@ static_resources:
                     timeout: 0.25s
           - name: envoy.router
             config: {}
+
   clusters:
+
+  - name: ratelimit_cluster
+    connect_timeout: 0.25s
+    type: strict_dns
+    lb_policy: round_robin
+    http2_protocol_options: {}
+    load_assignment:
+      cluster_name: ratelimit_cluster
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: ratelimit
+                port_value: 8081
+
   - name: ext-authz
     connect_timeout: 0.25s
     type: strict_dns
     lb_policy: round_robin
     load_assignment:
-      cluster_name: service
+      cluster_name: ext-authz
       endpoints:
       - lb_endpoints:
         - endpoint:
@@ -49,6 +78,7 @@ static_resources:
               socket_address:
                 address: authz
                 port_value: 9091
+
   - name: local_service
     connect_timeout: 0.25s
     type: strict_dns
@@ -67,4 +97,4 @@ admin:
   address:
     socket_address:
       address: 0.0.0.0
-      port_value: 8081
+      port_value: 8001
